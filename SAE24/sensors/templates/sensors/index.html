@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sensors</title>
+</head>
+<body>
+    <h1>All Sensors</h1>
+    <ul>
+        {% for sensor in sensors %}
+            <li><a href="{% url 'sensor_detail' sensor.id %}">{{ sensor.name }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
