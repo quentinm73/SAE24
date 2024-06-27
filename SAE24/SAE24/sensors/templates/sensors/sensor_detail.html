@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ sensor.name }}</title>
+    {%load static%}
+    <link rel="stylesheet" type="text/css" href="{% static 'sensors/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>{{ sensor.name }}</h1>
+    </header>
+    <div class="container">
+        <p>Room: {{ sensor.room }}</p>
+        <p>Location: {{ sensor.location }}</p>
+
+        <a href="{% url 'index' %}" class="button">Retour à la liste des capteurs</a>
+        
+        <h2>Modifier Capteur</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Enregistrer les modifications</button>
+        </form>
+        
+        <h2>Filtrer les Données</h2>
+        <form method="get">
+            {{ filter_form.as_p }}
+            <button type="submit">Filtrer</button>
+        </form>
+        
+        <h2>Data</h2>
+        <ul id="sensor-data-list">
+            {% for entry in data %}
+                <li>{{ entry.timestamp }}: {{ entry.temperature }}°C</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Choisir l'intervalle de rafraîchissement</h2>
+        <form id="refresh-form">
+            <input type="radio" name="refreshInterval" value="10000"> 10 secondes<br>
+            <input type="radio" name="refreshInterval" value="30000" checked> 30 secondes<br>
+            <input type="radio" name="refreshInterval" value="60000"> 1 minute<br>
+        </form>
+
+        <a href="{% url 'export_sensor_data_csv' sensor.id %}" class="button">Exporter les données en CSV</a>
+        <a href="{% url 'index' %}" class="button">Retour à la liste des capteurs</a>
+    </div>
+
+    <script>
+        
+        function refreshData() {
+            const refreshInterval = document.querySelector('input[name="refreshInterval"]:checked').value;
+            fetch(window.location.href) 
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const newDoc = parser.parseFromString(html, 'text/html');
+                    const newDataList = newDoc.getElementById('sensor-data-list');
+                    document.getElementById('sensor-data-list').innerHTML = newDataList.innerHTML;
+                });
+            setTimeout(refreshData, refreshInterval);
+        }
+
+        
+        refreshData();
+        
+        
+        document.getElementById('refresh-form').addEventListener('change', function() {
+            refreshData(); 
+        });
+    </script>
+</body>
+</html>
